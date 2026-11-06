@@ -10,7 +10,8 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | File | Description |
 |---|---|
 | `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features. Later parts will be added here. |
-| `fraud_detection_1.csv` | Amount statistics (mean, median, p95, max) for fraud vs normal transactions. |
+| [`fraud_detection_1.csv`](fraud_detection_1.csv) | EDA, step 12: transaction amount statistics (mean, median, p95, max) for fraud vs normal. |
+| [`fraud_detection_2.csv`](fraud_detection_2.csv) | Part 3: check of `gold_fraud_features` (row count, unique ids, fraud count, first transactions). |
 | `visualization_1.png` | Fraud rate by month of year. |
 | `visualization_2.png` | Fraud rate by hour of day. |
 | `visualization_3.png` | Fraud rate by transaction type. |
@@ -51,3 +52,9 @@ Fraud detection model for card transactions: build it from scratch in Databricks
     <td><img src="visualization_4.png" width="400" alt="Median amount, fraud vs normal"><br><em>Median transaction amount: about 70 for fraud vs about 29 for normal transactions.</em></td>
   </tr>
 </table>
+
+Amount statistics for fraud vs normal transactions: [`fraud_detection_1.csv`](fraud_detection_1.csv).
+
+### Part 3: gold features
+
+`gold_fraud_features` contains 8,914,963 rows (one per labelled transaction), 13,332 of them fraud. Check results: [`fraud_detection_2.csv`](fraud_detection_2.csv).
