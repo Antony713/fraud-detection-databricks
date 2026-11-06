@@ -9,7 +9,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 
 | File | Description |
 |---|---|
-| `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features. Later parts will be added here. |
+| `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features, time split. Later parts will be added here. |
 | [`fraud_detection_1.csv`](fraud_detection_1.csv) | EDA, step 12: transaction amount statistics for fraud vs normal (source of the table below). |
 | [`fraud_detection_2.csv`](fraud_detection_2.csv) | Part 3: check of `gold_fraud_features` (source of the table below). |
 | `visualization_1.png` | Fraud rate by month of year. |
@@ -25,7 +25,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | 1 | Setup: GitHub and Databricks | Done |
 | 2 | Load and explore the data (EDA) | Done |
 | 3 | Clean tables and features in SQL | Done |
-| 4 | Split the data by time | To do |
+| 4 | Split the data by time | Done |
 | 5 | Baseline model and metrics | To do |
 | 6 | Choose the decision threshold | To do |
 | 7 | Explain the model and present results | To do |
@@ -36,7 +36,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 |---|---|
 | Bronze | `pay_transactions`, `pay_cards`, `pay_users`, `pay_labels` |
 | Silver | `silver_transactions`, `silver_cards`, `silver_users` |
-| Gold | `gold_fraud_features` (one row per labelled transaction) |
+| Gold | `gold_fraud_features` (one row per labelled transaction), `gold_fraud_split` (same rows with a `split` column) |
 
 ## Results
 
@@ -80,3 +80,17 @@ One row per labelled transaction; `n_first_tx` is the number of first transactio
 - Built three layers: silver (3 cleaned tables) and gold (`gold_fraud_features`).
 - 21 main features and 5 reserve features; every history feature uses only data before the transaction (no leakage).
 - Excluded: `card_type`, `gender`, current-snapshot columns (credit score, income, debt, dark web flag) and full-period aggregates from `client_insider`.
+
+### Part 4: split by time
+
+| Set | Period | Rows | Fraud | Fraud rate | Share of rows |
+|---|---|---|---|---|---|
+| Train | 2010-01-01 to 2017-12-31 | 7,203,025 | 10,343 | 0.14% | 80.8% |
+| Validation | 2018 | 934,599 | 1,629 | 0.17% | 10.5% |
+| Test | 2019-01-01 to 2019-10-31 | 777,339 | 1,360 | 0.18% | 8.7% |
+
+**Summary of Part 4**
+- Oldest data for training, newer for validation, newest for test: the model learns from the past and is checked on the future.
+- Each set has enough fraud cases; the fraud rate in validation and test is close (0.17% and 0.18%).
+- The fraud rate differs a lot between years (for example 0.004% in 2011 and 0.26% in 2016), so results depend on the period.
+- The test set is used only once, at the very end.
