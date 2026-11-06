@@ -1,29 +1,16 @@
-## Repository contents
-
-| File | Description |
-|---|---|
-| `fraud_detection.ipynb` | Main notebook: EDA, silver and gold tables, features (Parts 2-3). Later parts will be added here. |
-| `fraud_detection_1.csv` | <what is inside: e.g. sample rows of gold_fraud_features> |
-| `fraud_detection_2.csv` | <what is inside> |
-| `visualization_1.png` ... `visualization_4.png` | EDA charts (see below). |
-| `fraud_detection_3.png` | <Part 3 screenshot: e.g. tables in Catalog or gold check> |
-| `README.md` | Project overview, results and screenshots. |
-
 ## Results
 
-### Part 2: EDA
-![Fraud rate by month](visualization_1.png)
-*Fraud rate by month. The rate is not stable over time.*
+### Part 2: EDA (full data, 2010-2019)
+![Fraud rate by month](visualization_X.png)
+*Fraud rate by month of year.*
 
-![Fraud rate by hour](visualization_2.png)
-*Fraud rate by hour of day. Fraud peaks at night (3:00-5:00).*
+![Fraud rate by hour](visualization_X.png)
+*Fraud rate by hour of day: peaks at 10:00-11:00 and 3:00-5:00, lowest in the evening (20:00-23:00).*
 
-![Fraud rate by transaction type](visualization_3.png)
-*Fraud rate by transaction type. Online transactions are far riskier than swipe.*
+![Fraud rate by transaction type](visualization_X.png)
+*Fraud rate by transaction type: online, chip and swipe.*
 
-![Amounts, fraud vs normal](visualization_4.png)
-*Transaction amounts: fraudulent transactions are larger (median and p95).*
+![Median amount, fraud vs normal](visualization_X.png)
+*Median transaction amount: about 70 for fraud vs about 29 for normal transactions.*
 
-### Part 3: tables and features
-![Part 3 result](fraud_detection_3.png)
-*<caption: e.g. gold_fraud_features has 8,914,963 rows (one per labelled transaction), 13,332 fraud.>*
+`fraud_detection_1.csv`: amount statistics (mean, median, p95, max) for fraud vs normal.
