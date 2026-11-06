@@ -57,8 +57,8 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 
 | is_fraud | n | mean_amt | median_amt | p95_amt | max_amt |
 |---|---|---|---|---|---|
-| Yes | ... | ... | ... | ... | ... |
-| No | ... | ... | ... | ... | ... |
+| Yes | 13,332 | 110.23 | 69.98 | 403.00 | 4,978.45 |
+| No | 8,901,631 | 42.85 | 28.95 | 145.44 | 6,613.44 |
 
 ### Part 3: gold features
 
