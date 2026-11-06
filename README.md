@@ -60,7 +60,13 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | Yes | 13,332 | 110.23 | 69.98 | 403.00 | 4,978.45 |
 | No | 8,901,631 | 42.85 | 28.95 | 145.44 | 6,613.44 |
 
-### Part 3: gold features
+**Summary of Part 2**
+- Replaced the transactions table (2010 only) with the full Kaggle file: 13.3M transactions, 2010-2019.
+- 8,914,963 transactions have a fraud label; 13,332 are fraud (about 0.15%).
+- Fraud rate changes by hour of day (peaks at 10:00-11:00 and 3:00-5:00).
+- Fraud is larger than normal transactions: median amount about 70 vs 29.
+
+### Part 3: tables and features
 
 **Check of `gold_fraud_features`** (source: [`fraud_detection_2.csv`](fraud_detection_2.csv))
 
@@ -69,3 +75,8 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | 8,914,963 | 8,914,963 | 13,332 | 812 |
 
 One row per labelled transaction; `n_first_tx` is the number of first transactions of a client (no history yet).
+
+**Summary of Part 3**
+- Built three layers: silver (3 cleaned tables) and gold (`gold_fraud_features`).
+- 21 main features and 5 reserve features; every history feature uses only data before the transaction (no leakage).
+- Excluded: `card_type`, `gender`, current-snapshot columns (credit score, income, debt, dark web flag) and full-period aggregates from `client_insider`.
