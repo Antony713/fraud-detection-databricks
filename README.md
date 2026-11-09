@@ -9,13 +9,14 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 
 | File | Description |
 |---|---|
-| `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features, time split. Later parts will be added here. |
+| `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features, time split, baseline model. Later parts will be added here. |
 | [`fraud_detection_1.csv`](fraud_detection_1.csv) | EDA, step 12: transaction amount statistics for fraud vs normal (source of the table below). |
 | [`fraud_detection_2.csv`](fraud_detection_2.csv) | Part 3: check of `gold_fraud_features` (source of the table below). |
 | `visualization_1.png` | Fraud rate by month of year. |
 | `visualization_2.png` | Fraud rate by hour of day. |
 | `visualization_3.png` | Fraud rate by transaction type. |
 | `visualization_4.png` | Median transaction amount, fraud vs normal. |
+| `Precision_recall_curve.png` | Part 5: precision-recall curve of the baseline model on the validation set. |
 | `README.md` | Project overview and results. |
 
 ## Progress
@@ -26,7 +27,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | 2 | Load and explore the data (EDA) | Done |
 | 3 | Clean tables and features in SQL | Done |
 | 4 | Split the data by time | Done |
-| 5 | Baseline model and metrics | To do |
+| 5 | Baseline model and metrics | Done |
 | 6 | Choose the decision threshold | To do |
 | 7 | Explain the model and present results | To do |
 
@@ -94,3 +95,30 @@ One row per labelled transaction; `n_first_tx` is the number of first transactio
 - Each set has enough fraud cases; the fraud rate in validation and test is close (0.17% and 0.18%).
 - The fraud rate differs a lot between years (for example 0.004% in 2011 and 0.26% in 2016), so results depend on the period.
 - The test set is used only once, at the very end.
+
+### Part 5: baseline model
+
+Logistic regression with `class_weight='balanced'` in a scikit-learn Pipeline (median imputer and standard scaler for numbers, one-hot encoder for categories), trained on the train set with the 21 main features. Metrics on the validation set, threshold 0.5. Runs are logged in MLflow.
+
+| Metric | Baseline (21 features) | Without `mcc` and `merchant_state` |
+|---|---|---|
+| Frauds caught (TP) | 1,626 of 1,629 | 696 of 1,629 |
+| False alarms (FP) | 27,214 | 85,879 |
+| Recall | 0.998 | 0.427 |
+| Precision | 0.056 | 0.008 |
+| ROC-AUC | 0.9986 | 0.743 |
+| PR-AUC | 0.713 | 0.008 |
+| Alerts per caught fraud | 17.7 | 124.4 |
+
+A random model has a PR-AUC equal to the fraud rate in validation (about 0.0017).
+
+<img src="Precision_recall_curve.png" width="450" alt="Precision-recall curve, validation set">
+
+*Precision-recall curve on the validation set. Threshold 0.5 sits at the far right end (recall 0.998, precision 0.056).*
+
+**Summary of Part 5**
+- Accuracy is not used: with about 0.17% fraud, a model that always says "not fraud" is 99.8% accurate and catches nothing.
+- At threshold 0.5 the baseline catches almost all fraud but raises many false alarms (about 17.7 alerts per real fraud). The threshold is chosen in Part 6.
+- The results looked too good, so I investigated. The largest coefficients belong to `mcc` and `merchant_state`: for example Haiti has a 97.7% fraud rate in train, and several categories have none. Without these two features the model is weak (PR-AUC 0.008).
+- The bank knows merchant category and location at the time of a transaction, so this is not a time leak, but the pattern may come from how the dataset was built and must be checked on real data.
+- Limits: the solver did not converge in 200 iterations; the test set has not been used.
