@@ -9,7 +9,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 
 | File | Description |
 |---|---|
-| `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features, time split, baseline model. Later parts will be added here. |
+| `fraud_detection.ipynb` | Main notebook: setup, EDA, silver and gold tables, features, time split, baseline model, threshold. Later parts will be added here. |
 | [`fraud_detection_1.csv`](fraud_detection_1.csv) | EDA, step 12: transaction amount statistics for fraud vs normal (source of the table below). |
 | [`fraud_detection_2.csv`](fraud_detection_2.csv) | Part 3: check of `gold_fraud_features` (source of the table below). |
 | `visualization_1.png` | Fraud rate by month of year. |
@@ -17,6 +17,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | `visualization_3.png` | Fraud rate by transaction type. |
 | `visualization_4.png` | Median transaction amount, fraud vs normal. |
 | `Precision_recall_curve.png` | Part 5: precision-recall curve of the baseline model on the validation set. |
+| `<cost_chart_file>.png` | Part 6: total cost vs threshold on the validation set. |
 | `README.md` | Project overview and results. |
 
 ## Progress
@@ -28,7 +29,7 @@ Fraud detection model for card transactions: build it from scratch in Databricks
 | 3 | Clean tables and features in SQL | Done |
 | 4 | Split the data by time | Done |
 | 5 | Baseline model and metrics | Done |
-| 6 | Choose the decision threshold | To do |
+| 6 | Choose the decision threshold | Done |
 | 7 | Explain the model and present results | To do |
 
 ## Data layers (medallion pattern)
@@ -121,4 +122,48 @@ A random model has a PR-AUC equal to the fraud rate in validation (about 0.0017)
 - At threshold 0.5 the baseline catches almost all fraud but raises many false alarms (about 17.7 alerts per real fraud). The threshold is chosen in Part 6.
 - The results looked too good, so I investigated. The largest coefficients belong to `mcc` and `merchant_state`: for example Haiti has a 97.7% fraud rate in train, and several categories have none. Without these two features the model is weak (PR-AUC 0.008).
 - The bank knows merchant category and location at the time of a transaction, so this is not a time leak, but the pattern may come from how the dataset was built and must be checked on real data.
-- Limits: the solver did not converge in 200 iterations; the test set has not been used.
+- Limits: the solver did not converge in 200 iterations.
+
+### Part 6: decision threshold
+
+Total cost = missed frauds × cost per miss + false alarms × cost per alarm. Cost of a miss is the amount of the fraudulent transaction; cost of a false alarm is an assumption of $5 (checked at $2 and $20). Thresholds were compared on the validation set.
+
+<img src="<cost_chart_file>.png" width="500" alt="Total cost vs threshold, validation set">
+
+*Total cost vs threshold on the validation set. The cheapest threshold is 0.97; the dotted line is the cost with no model.*
+
+**Validation set**
+
+| Option | Threshold | Precision | Recall | Alerts (2018) | Total cost |
+|---|---|---|---|---|---|
+| No model | - | - | - | - | $140,722 |
+| Default | 0.50 | 5.6% | 99.8% | 27,214 + 1,626 | $136,178 |
+| Cheapest at $5 per alarm | 0.97 | 46.7% | 87.9% | 3,069 | $15,771 |
+| Lowest threshold with precision of at least 10% | 0.77 | 10.3% | 97.8% | 15,399 | $69,891 |
+
+**Sensitivity to the cost of a false alarm**
+
+| False alarm cost | Best threshold | Total cost | Precision | Recall |
+|---|---|---|---|---|
+| $2 | 0.96 | $10,038 | 41.3% | 89.6% |
+| $5 | 0.97 | $15,771 | 46.7% | 87.9% |
+| $20 | 0.99 | $33,843 | 63.0% | 73.7% |
+
+**Test set (used once, threshold 0.97)**
+
+| Metric | Value |
+|---|---|
+| Rows / frauds | 777,339 / 1,360 |
+| Frauds caught / missed | 1,200 / 160 |
+| Recall / precision | 0.882 / 0.518 |
+| PR-AUC | 0.748 |
+| Fraud money caught / missed | $116,425 / $5,955 |
+| False alarms | 1,118 |
+| Alerts per day | 7.6 |
+| Alerts per real fraud | 1.93 |
+
+**Summary of Part 6**
+- We recommend threshold 0.97: the lowest total cost on validation ($15,771 vs $140,722 with no model and $136,178 at the default 0.5). It stays reasonable if a false alarm costs $2 (best 0.96) or $20 (best 0.99).
+- The test result is close to validation, so the threshold carries over to new data.
+- The rule "precision of at least 10%" gives threshold 0.77, but it means about 15,400 alerts a year and a four times higher cost, so it is a weak rule.
+- Limits: the quality rests on merchant category and country (Part 5); the costs are assumptions; threshold 0.97 is high because `class_weight='balanced'` inflates the probabilities.
