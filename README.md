@@ -128,7 +128,7 @@ A random model has a PR-AUC equal to the fraud rate in validation (about 0.0017)
 
 Total cost = missed frauds × cost per miss + false alarms × cost per alarm. Cost of a miss is the amount of the fraudulent transaction; cost of a false alarm is an assumption of $5 (checked at $2 and $20). Thresholds were compared on the validation set.
 
-<img src="<cost_chart_file>.png" width="500" alt="Total cost vs threshold, validation set">
+<img src="Cost_chart_and_sensitivity.png" width="500" alt="Total cost vs threshold, validation set">
 
 *Total cost vs threshold on the validation set. The cheapest threshold is 0.97; the dotted line is the cost with no model.*
 
